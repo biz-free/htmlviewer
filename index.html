@@ -67,6 +67,12 @@
             <button onclick="copyCode()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors" title="Salin Kod">
                 <i data-lucide="copy" class="w-4 h-4"></i> Salin
             </button>
+            
+            <button onclick="document.getElementById('file-upload').click()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors" title="Muat Naik Fail">
+                <i data-lucide="upload" class="w-4 h-4"></i> Muat Naik
+            </button>
+            <input type="file" id="file-upload" accept=".html,.txt,.css,.js" class="hidden" onchange="handleFileUpload(event)">
+            
             <button onclick="downloadCode()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm" title="Muat Turun Fail HTML">
                 <i data-lucide="download" class="w-4 h-4"></i> Muat Turun
             </button>
@@ -84,7 +90,13 @@
     <main class="flex-1 flex flex-col lg:flex-row p-4 gap-4 min-h-0">
         
         <!-- Panel Kiri: Ruang Editor -->
-        <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div id="editor-container" class="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative transition-all duration-200">
+            <!-- Overlay untuk Drag & Drop -->
+            <div id="drag-overlay" class="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/20 border-2 border-dashed border-blue-500 z-10 hidden flex flex-col items-center justify-center pointer-events-none">
+                <i data-lucide="file-down" class="w-12 h-12 text-blue-500 mb-2"></i>
+                <span class="text-blue-600 dark:text-blue-400 font-semibold text-lg">Lepaskan fail di sini</span>
+            </div>
+
             <div class="bg-gray-100 dark:bg-gray-900/50 px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <span class="font-semibold text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     <i data-lucide="file-code-2" class="w-4 h-4"></i> Kod HTML / CSS / JS
@@ -229,6 +241,62 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
+
+        // --- FUNGSI BARU: MUAT NAIK & DRAG/DROP ---
+
+        // Fungsi umum untuk membaca fail
+        function readFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                editor.value = e.target.result;
+                updatePreview();
+            };
+            reader.readAsText(file);
+        }
+
+        // Fungsi Muat Naik Fail (Butang)
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            readFile(file);
+            event.target.value = ''; // Reset supaya boleh muat naik fail yang sama lagi
+        }
+
+        // Setup Drag & Drop
+        const editorContainer = document.getElementById('editor-container');
+        const dragOverlay = document.getElementById('drag-overlay');
+        let dragCounter = 0; // Untuk elak kelipan (flickering) bila drag atas elemen anak
+
+        editorContainer.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragCounter++;
+            if (dragCounter === 1) {
+                dragOverlay.classList.remove('hidden');
+            }
+        });
+
+        editorContainer.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Mesti ada untuk membenarkan 'drop'
+        });
+
+        editorContainer.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragCounter--;
+            if (dragCounter === 0) {
+                dragOverlay.classList.add('hidden');
+            }
+        });
+
+        editorContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+            dragOverlay.classList.add('hidden');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                readFile(file);
+            }
+        });
     </script>
 </body>
 </html>
