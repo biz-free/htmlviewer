@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ms" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penyunting & Pratonton HTML</title>
+    
+    <!-- Tailwind CSS untuk Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons untuk Ikon -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Gaya tambahan untuk scrollbar agar nampak lebih kemas */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #1f2937; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300 h-screen flex flex-col font-sans">
+
+    <!-- Bahagian Header / Navigasi -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 flex-none px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 z-10">
+        <div class="flex items-center gap-2 text-primary dark:text-blue-400">
+            <i data-lucide="code-2" class="w-8 h-8"></i>
+            <h1 class="text-xl font-bold tracking-tight">HTML<span class="text-gray-800 dark:text-gray-200">Viewer</span></h1>
+        </div>
+        
+        <!-- Butang-butang Fungsi -->
+        <div class="flex items-center gap-2 flex-wrap justify-center">
+            <button onclick="clearCode()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg transition-colors" title="Padam Kod">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Padam
+            </button>
+            <button onclick="copyCode()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors" title="Salin Kod">
+                <i data-lucide="copy" class="w-4 h-4"></i> Salin
+            </button>
+            <button onclick="downloadCode()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm" title="Muat Turun Fail HTML">
+                <i data-lucide="download" class="w-4 h-4"></i> Muat Turun
+            </button>
+            
+            <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2"></div> <!-- Pemisah -->
+            
+            <button onclick="toggleTheme()" class="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 rounded-lg transition-colors" title="Tukar Mod Tema">
+                <i data-lucide="sun" id="theme-icon-light" class="w-5 h-5 hidden dark:block"></i>
+                <i data-lucide="moon" id="theme-icon-dark" class="w-5 h-5 block dark:hidden"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Bahagian Utama (Kiri & Kanan) -->
+    <main class="flex-1 flex flex-col lg:flex-row p-4 gap-4 min-h-0">
+        
+        <!-- Panel Kiri: Ruang Editor -->
+        <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-gray-100 dark:bg-gray-900/50 px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <span class="font-semibold text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <i data-lucide="file-code-2" class="w-4 h-4"></i> Kod HTML / CSS / JS
+                </span>
+                <span id="copy-feedback" class="text-xs text-green-600 dark:text-green-400 opacity-0 transition-opacity">Berjaya disalin!</span>
+            </div>
+            <textarea id="code-editor" class="flex-1 w-full p-4 bg-transparent text-sm font-mono text-gray-800 dark:text-gray-200 resize-none focus:outline-none focus:ring-0" placeholder="Paste atau taip kod HTML anda di sini..." spellcheck="false"></textarea>
+        </div>
+
+        <!-- Panel Kanan: Ruang Pratonton -->
+        <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+            <div class="bg-gray-100 dark:bg-gray-900/50 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                <span class="font-semibold text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <i data-lucide="monitor-play" class="w-4 h-4"></i> Paparan Pratonton
+                </span>
+            </div>
+            <!-- Latar belakang iframe sengaja dibiarkan putih supaya HTML render seperti keadaan asal -->
+            <iframe id="preview-frame" class="flex-1 w-full bg-white border-none" title="Pratonton"></iframe>
+        </div>
+
+    </main>
+
+    <!-- Skrip Logik -->
+    <script>
+        // Memuatkan ikon Lucide
+        lucide.createIcons();
+
+        // Pembolehubah elemen DOM
+        const editor = document.getElementById('code-editor');
+        const preview = document.getElementById('preview-frame');
+        const copyFeedback = document.getElementById('copy-feedback');
+
+        // Kod lalai (Template asas HTML)
+        const defaultCode = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: system-ui, sans-serif; text-align: center; padding: 40px; background: #f0fdf4; color: #166534; }
+        h1 { color: #15803d; }
+        .box { padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; }
+        button { background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        button:hover { background: #15803d; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Tahniah! 🎉</h1>
+        <p>Anda telah berjaya mewujudkan pratonton HTML anda.</p>
+        <p>Cuba ubah teks atau CSS di sebelah kiri.</p>
+        <button onclick="alert('Ini fungsi JavaScript!')">Klik Saya</button>
+    </div>
+</body>
+</html>`;
+
+        // Masukkan kod lalai ke dalam editor semasa mula-mula buka
+        editor.value = defaultCode;
+
+        // Fungsi kemas kini pratonton
+        function updatePreview() {
+            const htmlContent = editor.value;
+            // Gunakan objek dokumen dalam iframe untuk menulis ulang konten
+            const previewDoc = preview.contentDocument || preview.contentWindow.document;
+            
+            previewDoc.open();
+            previewDoc.write(htmlContent);
+            previewDoc.close();
+        }
+
+        // Kemas kini pratonton secara masa nyata semasa menaip (dengan sedikit lengah/debounce)
+        let timeout;
+        editor.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(updatePreview, 300); // Tunggu 300ms selepas berhenti menaip baru render
+        });
+
+        // Panggil render kali pertama
+        updatePreview();
+
+        // Fungsi: Padam Kod
+        function clearCode() {
+            editor.value = '';
+            updatePreview();
+            editor.focus();
+        }
+
+        // Fungsi: Salin Kod
+        function copyCode() {
+            if (!editor.value) return;
+            
+            // Kaedah moden untuk menyalin
+            navigator.clipboard.writeText(editor.value).then(() => {
+                copyFeedback.style.opacity = '1';
+                setTimeout(() => {
+                    copyFeedback.style.opacity = '0';
+                }, 2000);
+            }).catch(err => {
+                // Fallback jika API Clipboard terhalang
+                editor.select();
+                document.execCommand('copy');
+                copyFeedback.style.opacity = '1';
+                setTimeout(() => { copyFeedback.style.opacity = '0'; }, 2000);
+            });
+        }
+
+        // Fungsi: Muat Turun Kod HTML
+        function downloadCode() {
+            const htmlContent = editor.value;
+            if (!htmlContent.trim()) {
+                alert("Tiada kod untuk dimuat turun.");
+                return;
+            }
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'laman_web_saya.html'; // Nama fail lalai
+            document.body.appendChild(a);
+            a.click();
+            
+            // Bersihkan memori
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Fungsi: Pengurusan Mod Gelap (Dark Mode)
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Semak tetapan tema sebelumnya semasa muka surat dimuatkan
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</body>
+</html>
