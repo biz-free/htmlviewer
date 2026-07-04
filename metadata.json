@@ -1,0 +1,6 @@
+{
+  "name": "Pembina Laman Web AI",
+  "description": "Alat terap dan papar kod HTML serta patch dari AI untuk orang awam tanpa coding.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
